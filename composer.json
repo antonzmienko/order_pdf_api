@@ -22,6 +22,7 @@
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^12.5.12",
         "spatie/laravel-ignition": "^2.0"
     },
@@ -38,6 +39,7 @@
         }
     },
     "scripts": {
+        "php-stan": "./vendor/bin/phpstan analyse",
         "php-cs-fixer-check": "./vendor/bin/php-cs-fixer check",
         "php-cs-fixer-fix": "./vendor/bin/php-cs-fixer fix",
         "post-autoload-dump": [
