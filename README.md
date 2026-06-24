@@ -80,5 +80,4 @@ docker compose up --build -d
 echo "API:    http://localhost:3000"
 echo "Client: http://localhost:5173"
 echo "Остановка: docker compose down"
-
 ```
