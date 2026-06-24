@@ -10,81 +10,82 @@ use Illuminate\Support\Facades\View;
 
 class OrderController extends Controller
 {
-   const UNITS = [
-       'piece' => 'шт.',
-       'kg' => 'кг.',
-       'litres' => 'л.',
-   ];
+    public const UNITS = [
+        'piece' => 'шт.',
+        'kg' => 'кг.',
+        'litres' => 'л.',
+    ];
 
-   public function handle(OrderRequest $request){
-       $data_in = $request->validated();
+    public function handle(OrderRequest $request)
+    {
+        $data_in = $request->validated();
 
-       $image = $data_in['logo'];
+        $image = $data_in['logo'];
 
-       $data = [];
+        $data = [];
 
-       if ($image){
-           $imagePath = $this->saveFile($image, 'images/');
-           $data['logo'] = $this->convertImageToBase64($imagePath);
-       }
+        if ($image) {
+            $imagePath = $this->saveFile($image, 'images/');
+            $data['logo'] = $this->convertImageToBase64($imagePath);
+        }
 
-       $data['supplier_title'] = $data_in['supplier_title'] ?? '';
-       $data['order_number'] = $data_in['order_number'] ?? '';
-       $data['order_date'] = date('Y-m-d');
-       $data['supplier_inn'] = $data_in['supplier_inn'] ?? '';
-       $data['supplier_kpp'] = $data_in['supplier_kpp'] ?? '';
-       $data['supplier_address'] = $data_in['supplier_address'] ?? '';
-       $data['client_fio'] = $data_in['client_fio'] ?? '';
-       $data['client_inn'] = $data_in['client_inn'] ?? '';
-       $data['client_address'] = $data_in['client_address'] ?? '';
+        $data['supplier_title'] = $data_in['supplier_title'] ?? '';
+        $data['order_number'] = $data_in['order_number'] ?? '';
+        $data['order_date'] = date('Y-m-d');
+        $data['supplier_inn'] = $data_in['supplier_inn'] ?? '';
+        $data['supplier_kpp'] = $data_in['supplier_kpp'] ?? '';
+        $data['supplier_address'] = $data_in['supplier_address'] ?? '';
+        $data['client_fio'] = $data_in['client_fio'] ?? '';
+        $data['client_inn'] = $data_in['client_inn'] ?? '';
+        $data['client_address'] = $data_in['client_address'] ?? '';
 
-       foreach ($data_in['products'] as $key => $product){
-           $data['products'][] = [
-               'item' => $key + 1,
-               'product_name' => $product['name'],
-               'quantity' => $product['quantity'],
-               'unit' => self::UNITS[$product['unit']] ?? '',
-               'price' => $product['price'],
-               'sum' => round($product['sum'], 2),
-           ];
-       }
-       $data['total_quantity'] = round($data_in['total_quantity'], 2) ?? '';
-       $data['total_sum'] = round($data_in['total_sum'], 2) ?? '';
+        foreach ($data_in['products'] as $key => $product) {
+            $data['products'][] = [
+                'item' => $key + 1,
+                'product_name' => $product['name'],
+                'quantity' => $product['quantity'],
+                'unit' => self::UNITS[$product['unit']] ?? '',
+                'price' => $product['price'],
+                'sum' => round($product['sum'], 2),
+            ];
+        }
+        $data['total_quantity'] = round($data_in['total_quantity'], 2) ?? '';
+        $data['total_sum'] = round($data_in['total_sum'], 2) ?? '';
 
-       $dompdf = new Dompdf();
+        $dompdf = new Dompdf();
 
-       $html = View::make('order', $data)->render();
+        $html = View::make('order', $data)->render();
 
-       $dompdf->loadHtml($html);
+        $dompdf->loadHtml($html);
 
-       $options = new Options();
-       $options->set('defaultFont', 'DejaVu Sans');
-       $dompdf->setOptions($options);
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $dompdf->setOptions($options);
 
-       $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'portrait');
 
-       $dompdf->render();
+        $dompdf->render();
 
-       $pdfname = 'order_' . $data['order_number'] . '.pdf';
+        $pdfname = 'order_' . $data['order_number'] . '.pdf';
 
-       Storage::disk('public')->put('pdfs/' . $pdfname, $dompdf->output());
+        Storage::disk('public')->put('pdfs/' . $pdfname, $dompdf->output());
 
-       $url = asset(Storage::url('pdfs/' . $pdfname));
+        $url = asset(Storage::url('pdfs/' . $pdfname));
 
-       if (Storage::exists('public/' . $imagePath)){
-           Storage::delete('public/' . $imagePath);
-       }
+        if (Storage::exists('public/' . $imagePath)) {
+            Storage::delete('public/' . $imagePath);
+        }
 
-       return $url;
-   }
+        return $url;
+    }
 
     private function saveFile($file, $path, $name = null)
     {
         if (Storage::exists($path)) {
-            Storage::makeDirectory($path, 0755, true);
+            Storage::makeDirectory($path, 0o755, true);
         }
 
-        if (empty($name)){
+        if (empty($name)) {
             if (!Storage::putFileAs('public/' . $path, $file, $file->getClientOriginalName())) {
                 throw new \Exception("Unable to save file \"{$file->getClientOriginalName()}\"");
             }
@@ -101,7 +102,7 @@ class OrderController extends Controller
     {
         $imageData = Storage::disk('public')->get($path);
 
-        $type = pathinfo( Storage::url($path), PATHINFO_EXTENSION);
+        $type = pathinfo(Storage::url($path), \PATHINFO_EXTENSION);
 
         $base64Image = base64_encode($imageData);
 

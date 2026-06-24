@@ -14,7 +14,8 @@ class OrderRequest extends FormRequest
         return true;
     }
 
-    public function prepareForValidation(){
+    public function prepareForValidation(): void
+    {
         $this->merge([
             'products' => json_decode($this->products, 1),
         ]);

@@ -14,7 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-Route::post('order',  [\App\Http\Controllers\OrderController::class, 'handle']);
+Route::middleware('auth:sanctum')->get('/user', static fn(Request $request) => $request->user());
+Route::post('order', [\App\Http\Controllers\OrderController::class, 'handle']);
